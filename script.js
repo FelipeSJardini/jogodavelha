@@ -1,74 +1,76 @@
- const emojis = ["🐶", "🐱", "🐰", "🦊", "🐸", "🐵", "🦁", "🐼"];
-    let cartas = [];
-    let primeira = null;
-    let segunda = null;
-    let bloqueado = false;
-    let movimentos = 0;
+let currentPlayer = 'X';
+const board = [];
 
-    function embaralhar(array) {
+function startGame() {
+  const gameBoard = document.getElementById('gameBoard');
+  gameBoard.innerHTML = '';
+  currentPlayer = 'X';
+
+  for (let i = 0; i < 3; i++) {
+    //matriz externa (linhas)
+    board[i] = [];
+    for (let j = 0; j < 3; j++) {
+      //matriz interna (colunas)
+      board[i][j] = '';
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.row = i
+      cell.dataset.col = j
+      cell.addEventListener("click", handleClick)
+      gameBoard.appendChild(cell)
       
-     return array.sort(()=> 0.5 - Math.random())
-
     }
+  }
+}
 
-    function criarCarta(emoji) {
-     const carta = document.createElement("div")
-     carta.classList.add("carta")
-     carta.textContent = "❓"
-     carta.valor = emoji
-     carta.addEventListener("click", ()=> virarCarta(carta))
-     return carta
-    }
+function handleClick(e) {
+ const row = e.target.dataset.row;
+ const col = e.target.dataset.col;
 
-    function virarCarta(carta) {
-      if(bloqueado || carta.classList.contains("virada")) return
+ if(board[row][col]===""){
+  board[row][col] = currentPlayer
+  e.target.textContent = currentPlayer
 
-      carta.textContent = carta.valor
-      carta.classList.add("virada")
+  if(checkWin(currentPlayer)){
+    setTimeout(() => {
+      alert(`Jogador ${currentPlayer} venceu!`)
+    }, 250);
+    disableBoard();
+    return
+  }
 
-      if(!primeira){
-         primeira = carta
-      }else{
-         segunda = carta
-         bloqueado = true
-         movimentos ++;
-         document.getElementById("movimentos").textContent = movimentos;
+  currentPlayer = currentPlayer === "X" ? "O":"X"
+ }
+}
 
-         setTimeout(() => {
-            if(primeira.valor !== segunda.valor){
-               primeira.textContent = "❓"
-               segunda.textContent = "❓"
-               primeira.classList.remove("virada")
-               segunda.classList.remove("virada")
-            }
-            primeira = null
-            segunda = null
-            bloqueado = false
-            checarVitoria()
-         }, 800);
-      }
-    }
+function checkWin(player) {
+  // Verifica linhas
+ for(let i=0; i<3; i++){
+  if(board[i][0] === player && board[i][1] === player && board[i][2] === player){
+    return true;
+  }
+ }
 
-    function checarVitoria() {
-    const viradas = document.querySelectorAll(".virada")
-    if(viradas.length === cartas.length){
-      document.getElementById("mensagem").textContent = `Parabéns! Você venceu com ${movimentos}movimentos`
-    }
-    }
+  // Verifica colunas
+ for(let j=0; j<3; j++){
+  if(board[0][j] === player && board[1][j] === player && board[2][j] === player){
+    return true;
+  }
+ }  
 
-    function iniciarJogo() {
-     const tabuleiro = document.getElementById("tabuleiro")
-     tabuleiro.innerHTML = ""
-     document.getElementById("mensagem").textContent = ""
-     movimentos = 0
-     document.getElementById("movimentos").textContent = movimentos
+  // Verifica diagonais
+  if(board[0][0] === player && board[1][1] === player && board[2][2] === player ||
+     board[0][2] === player && board[1][1] === player && board[2][0] === player
+    ) {
+     return true;
+  }
+   
+ return false
+}
 
-     cartas = embaralhar([...emojis, ...emojis])
-     console.log(cartas)
-     cartas.forEach(emoji => {
-      const carta = criarCarta(emoji)
-      tabuleiro.appendChild(carta)
-     });
-    }
+function disableBoard() {
+const cells = document.querySelectorAll('.cell');
+  cells.forEach(cell => cell.removeEventListener('click', handleClick));
+}
 
-    iniciarJogo();
+startGame();
